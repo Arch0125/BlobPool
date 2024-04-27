@@ -13,15 +13,17 @@ async function main(){
         transport: http()
     })
 
-    const blobData = '0xabc'
+    const blobData = '0xabcd'
     const message = keccak256(blobData)
     const signature =await walletClient.signMessage({message})
 
-    console.log(signature)
+    const res = await axios.post('http://localhost:3000/submit',{
+        sender: walletClient.account.address, signature, blobData, proposedFee:Math.ceil(Math.random()*100000)
+    })
 
-    const valid =await verifySignature(walletClient.account.address, signature, message)
-
-    console.log(valid)
+    console.log(res.data)
 }
 
-main();
+let n = 6;
+while(n--){
+main();}

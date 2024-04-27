@@ -1,0 +1,1 @@
+export const MAX_BLOB_SIZE = 128*1024;

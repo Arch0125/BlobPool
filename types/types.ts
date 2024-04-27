@@ -2,6 +2,7 @@ import type { Address, Hash } from "viem";
 
 export type blob = {
     blobId: number;
+    blobData: Hash;
     sender: Address;
     signature: Hash;
     startIndex: number;
