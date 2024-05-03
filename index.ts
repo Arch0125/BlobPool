@@ -3,9 +3,10 @@ import type { Response, Request } from "express";
 import * as bodyparser from 'body-parser'
 import cors from 'cors';
 import { verifySignature } from './utils/signatureHelper';
-import { keccak256 } from 'viem';
+import { isHex, keccak256, stringToHex, toHex } from 'viem';
 import type { blob } from './types/types';
 import { blobBatcher } from './batcher';
+import { submitBlobHandler } from './submitter';
 
 const app = express();
 
@@ -15,15 +16,22 @@ app.use(cors())
 let blobId = 0;
 let blobArray: blob[] = [];
 
-function updateMempool() {
-    const { currentBatch, tempArray } = blobBatcher(blobArray)
+async function updateMempool() {
+    const { currentBatch, tempArray, formattedBlobSubmissionData } = blobBatcher(blobArray)
     blobArray = tempArray;
+    console.log("CurrentBatch",currentBatch.length)
+    console.log("Temp Array", tempArray.length)
+    if(currentBatch.length!=0){
+    console.log(await submitBlobHandler(formattedBlobSubmissionData))}
 }
 
 app.post("/submit", (req: Request, res: Response) => {
     try {
         blobId++;
-        const { sender, signature, blobData, proposedFee } = req.body;
+        let { sender, signature, blobData, proposedFee } = req.body;
+        if(!isHex(blobData)){
+            blobData = stringToHex(blobData)
+        }
         const message = keccak256(blobData);
         const validSignature = verifySignature(sender, signature, message);
         if (!validSignature) {
@@ -51,5 +59,5 @@ app.post("/submit", (req: Request, res: Response) => {
 app.listen(3000, () => {
     console.log('BlobPool listening at PORT 3000')
 
-    setInterval(() => updateMempool(), 1000)
+    setInterval(() => updateMempool(), 5000)
 })
