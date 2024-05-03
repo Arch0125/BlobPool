@@ -7,6 +7,7 @@ import { isHex, keccak256, stringToHex, toHex } from 'viem';
 import type { blob } from './types/types';
 import { blobBatcher } from './batcher';
 import { submitBlobHandler } from './submitter';
+import { logger } from './logger';
 
 const app = express();
 
@@ -19,10 +20,13 @@ let blobArray: blob[] = [];
 async function updateMempool() {
     const { currentBatch, tempArray, formattedBlobSubmissionData } = blobBatcher(blobArray)
     blobArray = tempArray;
-    console.log("CurrentBatch",currentBatch.length)
-    console.log("Temp Array", tempArray.length)
+    logger.info(`Current batch length : ${currentBatch.length}`, "BATCHER")
+    logger.info(`Current batch content `, "BATCHER")
+    console.log(currentBatch)
+    logger.info(`Blob mempool : `, "MEMPOOL")
+    console.log(tempArray)
     if(currentBatch.length!=0){
-    console.log(await submitBlobHandler(formattedBlobSubmissionData))}
+    await submitBlobHandler(formattedBlobSubmissionData, currentBatch)}
 }
 
 app.post("/submit", (req: Request, res: Response) => {
@@ -59,5 +63,5 @@ app.post("/submit", (req: Request, res: Response) => {
 app.listen(3000, () => {
     console.log('BlobPool listening at PORT 3000')
 
-    setInterval(() => updateMempool(), 5000)
+    setInterval(() => updateMempool(), 12000)
 })

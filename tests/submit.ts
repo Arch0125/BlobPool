@@ -1,5 +1,5 @@
 import axios from "axios";
-import { createWalletClient, http, keccak256 } from "viem";
+import { createWalletClient, http, keccak256, stringToHex } from "viem";
 import { generatePrivateKey, privateKeyToAccount } from "viem/accounts";
 import { holesky } from "viem/chains";
 import { verifySignature } from "../utils/signatureHelper";
@@ -13,8 +13,8 @@ async function main(){
         transport: http()
     })
 
-    const blobData = '0xabcd'
-    const message = keccak256(blobData)
+    const blobData = 'hello'
+    const message = stringToHex(blobData)
     const signature =await walletClient.signMessage({message})
 
     const res = await axios.post('http://localhost:3000/submit',{

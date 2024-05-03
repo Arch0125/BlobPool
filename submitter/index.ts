@@ -5,6 +5,7 @@ import * as cKzg from 'c-kzg'
 import { setupKzg } from 'viem'
 import * as path from "path"
 import type { blob } from '../types/types'
+import { logger } from '../logger'
 
 export const account = privateKeyToAccount(`0x${process.env.OPERATOR_PRIVATE_KEY}`)
  
@@ -20,18 +21,20 @@ console.log(mainnetSetupPath)
 
 const kzg = setupKzg(cKzg, mainnetSetupPath)
 
-export const submitBlobHandler=async(blobData:`0x${string}`)=>{
+export const submitBlobHandler=async(blobData:`0x${string}`, currentBatch: blob[])=>{
     let mergedBlob = ""
     const blobs = toBlobs({ data: blobData })
 
     const hash = await client.sendTransaction({
         blobs,
         kzg,
-        maxFeePerBlobGas: parseGwei('100'),
+        maxFeePerBlobGas: parseGwei('50'),
         to: '0x0000000000000000000000000000000000000000',
       })
 
-      console.log("Submitting", hash)
+      logger.info(`Submitting Blob with transaction hash ${hash}`, "SUBMITTER")
+
+      currentBatch.map((blob)=>blob.txHash=hash)
       
       return hash;
 }

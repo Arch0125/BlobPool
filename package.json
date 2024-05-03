@@ -12,6 +12,7 @@
   },
   "dependencies": {
     "20": "^3.1.9",
+    "@ptkdev/logger": "^1.8.0",
     "axios": "^1.6.8",
     "body-parser": "^1.20.2",
     "c-kzg": "^4.0.0-alpha.0",
