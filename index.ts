@@ -10,6 +10,8 @@ import type { blob } from './types/types';
 import { blobBatcher } from './batcher';
 import { submitBlobHandler } from './submitter';
 import { logger } from './logger';
+import { holeskyPubliClient, mainnetPubliClient } from './utils/providers';
+import { getBlobBaseFee } from './gascalc';
 
 const app = express();
 const httpServer = createServer(app);
@@ -39,7 +41,6 @@ async function updateMempool() {
     console.log(remainingBlobs);
     if (currentBatch.length != 0) {
         const {hash, currentBatchWithHash} = await submitBlobHandler(formattedBlobSubmissionData, currentBatch);
-        console.log(currentBatchWithHash)
         io.emit("postBlobToL1", {formattedBlobSubmissionData,currentBatchWithHash, hash})
     }
 }
@@ -87,7 +88,8 @@ app.post("/submit", (req: Request, res: Response) => {
 });
 
 
-httpServer.listen(3001, () => {
+httpServer.listen(3001, async () => {
     console.log('BlobPool listening at PORT 3001');
+    console.log(await getBlobBaseFee())
     setInterval(() => updateMempool(), 2000);
 });

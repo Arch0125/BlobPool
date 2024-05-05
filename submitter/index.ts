@@ -7,6 +7,8 @@ import * as path from "path"
 import type { blob } from '../types/types'
 import { logger } from '../logger'
 import db, { addToDB } from '../dbhandler'
+import { getBlobBaseFee } from '../gascalc'
+import axios from 'axios'
 
 export const account = privateKeyToAccount(`0x${process.env.OPERATOR_PRIVATE_KEY}`)
 
@@ -28,7 +30,7 @@ export const submitBlobHandler = async (blobData: `0x${string}`, currentBatchWit
     const hash = await client.sendTransaction({
         blobs,
         kzg,
-        maxFeePerBlobGas: parseGwei('7000'),
+        maxFeePerBlobGas: await getBlobBaseFee(),
         to: '0x0000000000000000000000000000000000000000',
     })
 
