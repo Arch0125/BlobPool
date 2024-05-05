@@ -17,7 +17,7 @@ async function main(){
     const message = stringToHex(blobData)
     const signature =await walletClient.signMessage({message})
 
-    const res = await axios.post('http://localhost:3000/submit',{
+    const res = await axios.post('http://localhost:3001/submit',{
         sender: walletClient.account.address, signature, blobData, proposedFee:Math.ceil(Math.random()*100000)
     })
 

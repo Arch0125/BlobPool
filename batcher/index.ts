@@ -3,27 +3,48 @@ import type { blob } from "../types/types";
 import { MAX_BLOB_SIZE } from "../constants";
 
 
-export const blobBatcher = (blobArray: blob[]):{ currentBatch: blob[], tempArray: blob[], formattedBlobSubmissionData: `0x${string}` } => {
-    let tempArray: blob[] = []
-    let currentBatch: blob[] = []
-    tempArray = blobArray.sort((a, b) => b.proposedfee - a.proposedfee)
-    let totalSize = 0;
-    for (let i = 0; i < tempArray.length; i++) {
-        totalSize = totalSize + size(tempArray[i].blobData)
-        if (totalSize > 10) {
-            currentBatch = tempArray.slice(0, i)
-            tempArray = tempArray.slice(i)
-            break;
+export const blobBatcher = (blobArray: blob[]): { currentBatch: blob[], remainingBlobs: blob[], formattedBlobSubmissionData: string } => {
+    const maxCapacity = MAX_BLOB_SIZE; 
+    const n = blobArray.length;
+    const dp: number[][] = Array(n + 1).fill(0).map(() => Array(maxCapacity + 1).fill(0));
+    const keep: boolean[][] = Array(n + 1).fill(0).map(() => Array(maxCapacity + 1).fill(false));
+
+    blobArray.sort((a, b) => b.proposedfee - a.proposedfee);
+
+    for (let i = 1; i <= n; i++) {
+        for (let w = 1; w <= maxCapacity; w++) {
+            const blobSize = size(blobArray[i - 1].blobData);
+            const blobFee = blobArray[i - 1].proposedfee;
+            if (blobSize <= w) {
+                if (blobFee + dp[i - 1][w - blobSize] > dp[i - 1][w]) {
+                    dp[i][w] = blobFee + dp[i - 1][w - blobSize];
+                    keep[i][w] = true;
+                } else {
+                    dp[i][w] = dp[i - 1][w];
+                }
+            } else {
+                dp[i][w] = dp[i - 1][w];
+            }
         }
     }
-    let startIndex = 0;
-    let endIndex = 0;
-    let blobSubmissionData = ''
-    for (let i = 0; i < currentBatch.length; i++) {
-        startIndex = endIndex
-        blobSubmissionData = blobSubmissionData + currentBatch[i].blobData.slice(2)
-        endIndex = blobSubmissionData.length
+
+    let currentBatch: blob[] = [];
+    let remainingBlobs: blob[] = [];
+    let K = maxCapacity;
+    for (let i = n; i > 0; i--) {
+        if (keep[i][K]) {
+            currentBatch.push(blobArray[i - 1]);
+            K -= size(blobArray[i - 1].blobData);
+        } else {
+            remainingBlobs.push(blobArray[i - 1]);
+        }
     }
-    let formattedBlobSubmissionData:`0x${string}` = `0x${blobSubmissionData}`
-    return {currentBatch, tempArray, formattedBlobSubmissionData}
-}
+
+    let blobSubmissionData = '';
+    currentBatch.forEach(blob => {
+        blobSubmissionData += blob.blobData.slice(2); // Assume blobData is prefixed '0x'
+    });
+    let formattedBlobSubmissionData = `0x${blobSubmissionData}`;
+
+    return { currentBatch, remainingBlobs, formattedBlobSubmissionData };
+};

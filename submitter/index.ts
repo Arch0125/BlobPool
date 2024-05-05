@@ -6,13 +6,14 @@ import { setupKzg } from 'viem'
 import * as path from "path"
 import type { blob } from '../types/types'
 import { logger } from '../logger'
+import db, { addToDB } from '../dbhandler'
 
 export const account = privateKeyToAccount(`0x${process.env.OPERATOR_PRIVATE_KEY}`)
- 
+
 export const client = createWalletClient({
-  account,
-  chain: holesky,
-  transport: http()
+    account,
+    chain: holesky,
+    transport: http()
 })
 
 const mainnetSetupPath = path.resolve("./submitter/mainnet.json")
@@ -21,20 +22,19 @@ console.log(mainnetSetupPath)
 
 const kzg = setupKzg(cKzg, mainnetSetupPath)
 
-export const submitBlobHandler=async(blobData:`0x${string}`, currentBatch: blob[])=>{
-    let mergedBlob = ""
+export const submitBlobHandler = async (blobData: `0x${string}`, currentBatchWithHash: blob[]) => {
     const blobs = toBlobs({ data: blobData })
 
     const hash = await client.sendTransaction({
         blobs,
         kzg,
-        maxFeePerBlobGas: parseGwei('50'),
+        maxFeePerBlobGas: parseGwei('7000'),
         to: '0x0000000000000000000000000000000000000000',
-      })
+    })
 
-      logger.info(`Submitting Blob with transaction hash ${hash}`, "SUBMITTER")
+    logger.info(`Submitting Blob with transaction hash ${hash}`, "SUBMITTER")
 
-      currentBatch.map((blob)=>blob.txHash=hash)
-      
-      return hash;
+    currentBatchWithHash.map((blob) => blob.txHash = hash)
+
+    return { hash, currentBatchWithHash };
 }
