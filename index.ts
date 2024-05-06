@@ -90,6 +90,6 @@ app.post("/submit", (req: Request, res: Response) => {
 
 httpServer.listen(3001, async () => {
     console.log('BlobPool listening at PORT 3001');
-    console.log(await getBlobBaseFee())
-    setInterval(() => updateMempool(), 2000);
+    logger.info(`Estimated Base fee per blob gas : ${await getBlobBaseFee()} gwei`,"SUBMITTER")
+    setInterval(() => updateMempool(), 12000);
 });

@@ -4,9 +4,8 @@ import { holeskyPubliClient } from "../utils/providers";
 export async function getBlobBaseFee(){
     const latestBlock = await holeskyPubliClient.getBlock();
     const { excessBlobGas } = latestBlock;
-    console.log(excessBlobGas)
     const blobBaseFeePerBlobGas = getBaseFeePerBlobGas(BigInt(excessBlobGas));
-    const estimate = (blobBaseFeePerBlobGas * 110n) / 100n;
+    const estimate = (blobBaseFeePerBlobGas * 130n) / 100n;
     return estimate;
 }
 

@@ -20,7 +20,6 @@ export const client = createWalletClient({
 
 const mainnetSetupPath = path.resolve("./submitter/mainnet.json")
 
-console.log(mainnetSetupPath)
 
 const kzg = setupKzg(cKzg, mainnetSetupPath)
 
