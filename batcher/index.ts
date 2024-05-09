@@ -40,10 +40,15 @@ export const blobBatcher = (blobArray: blob[]): { currentBatch: blob[], remainin
         }
     }
 
+    let endIndex = 0;
     let blobSubmissionData = '';
     currentBatch.forEach(blob => {
+        blob.startIndex=endIndex;
         blobSubmissionData += blob.blobData.slice(2); // Assume blobData is prefixed '0x'
+        blob.endIndex=blobSubmissionData.length
+        endIndex=blobSubmissionData.length
     });
+
     let formattedBlobSubmissionData = `0x${blobSubmissionData}`;
 
     return { currentBatch, remainingBlobs, formattedBlobSubmissionData };
